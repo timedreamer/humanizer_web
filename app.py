@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 
 APP_TITLE = "Humanizer"
-MAX_CHARS = 12000
+MAX_CHARS = 8000
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 
 SYSTEM_PROMPT = '''
