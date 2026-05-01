@@ -140,6 +140,16 @@ def humanize_text(
 def main() -> None:
     st.set_page_config(page_title=APP_TITLE, page_icon="✍️", layout="wide")
 
+    st.markdown(
+        """
+        <style>
+        .stTextArea textarea { font-size: 18px !important; }
+        .stCaption { font-size: 16px !important; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     st.title(APP_TITLE)
     st.caption("Rewrite pasted text to sound more natural while preserving meaning.")
 
