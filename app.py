@@ -1,7 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 
-from prompts import SYSTEM_PROMPT, STRENGTH_INSTRUCTIONS, STYLE_INSTRUCTIONS
+from prompts import SYSTEM_PROMPT, STRENGTH_INSTRUCTIONS
 
 APP_TITLE = "Humanizer"
 MAX_CHARS = 8000
@@ -43,7 +43,6 @@ def require_password() -> None:
 def build_user_prompt(
     text: str,
     rewrite_strength: str,
-    output_style: str,
     preserve_markdown: bool,
     make_concise: bool,
     show_analysis: bool = False,
@@ -51,8 +50,6 @@ def build_user_prompt(
     parts: list[str] = [
         f"Rewrite strength: {rewrite_strength}.",
         STRENGTH_INSTRUCTIONS[rewrite_strength],
-        f"Output style: {output_style}.",
-        STYLE_INSTRUCTIONS[output_style],
     ]
 
     if make_concise:
@@ -88,7 +85,6 @@ def humanize_text(
     text: str,
     model: str,
     rewrite_strength: str,
-    output_style: str,
     preserve_markdown: bool,
     make_concise: bool,
     show_analysis: bool = False,
@@ -98,7 +94,6 @@ def humanize_text(
     user_prompt = build_user_prompt(
         text=text,
         rewrite_strength=rewrite_strength,
-        output_style=output_style,
         preserve_markdown=preserve_markdown,
         make_concise=make_concise,
         show_analysis=show_analysis,
@@ -157,12 +152,6 @@ def main() -> None:
             index=1,
         )
 
-        output_style = st.selectbox(
-            "Output style",
-            ["Natural", "Concise", "Professional", "Casual"],
-            index=0,
-        )
-
         preserve_markdown = st.checkbox("Preserve Markdown", value=True)
         make_concise = st.checkbox("Make more concise", value=False)
         show_analysis = st.checkbox("Show full analysis", value=False)
@@ -194,7 +183,6 @@ def main() -> None:
                     text=input_text,
                     model=model,
                     rewrite_strength=rewrite_strength,
-                    output_style=output_style,
                     preserve_markdown=preserve_markdown,
                     make_concise=make_concise,
                     show_analysis=show_analysis,

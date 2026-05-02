@@ -436,24 +436,3 @@ STRENGTH_INSTRUCTIONS: dict[str, str] = {
     ),
 }
 
-STYLE_INSTRUCTIONS: dict[str, str] = {
-    "Natural": (
-        "Use a natural, balanced tone with moderate personality. Follow the "
-        "personality guidelines to add voice, but do not force informality."
-    ),
-    "Concise": (
-        "Tighten wordy phrasing. Remove redundancy, filler phrases, and "
-        "unnecessary modifiers. Cut every sentence as short as possible "
-        "without losing meaning. Prioritize clarity and brevity."
-    ),
-    "Professional": (
-        "Use a restrained, measured tone. Avoid casual language, contractions, "
-        "and first-person perspective. Maintain authority and precision. "
-        "Apply personality subtly — focus on clarity and directness."
-    ),
-    "Casual": (
-        "Use a conversational, informal tone. Contractions, first-person, "
-        "and casual phrasing are welcome. Write as if explaining to a "
-        "colleague over coffee. Short sentences, natural rhythm, no pomposity."
-    ),
-}
