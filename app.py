@@ -115,7 +115,6 @@ def main() -> None:
         """
         <style>
         .stTextArea textarea { font-size: 18px !important; }
-        .stCaption { font-size: 18px !important; }
         </style>
         """,
         unsafe_allow_html=True,
@@ -154,50 +153,52 @@ def main() -> None:
         preserve_markdown = st.checkbox("Preserve Markdown", value=True)
         show_analysis = st.checkbox("Show full analysis", value=False)
 
-    input_text = st.text_area(
-        "Paste text to humanize",
-        height=300,
-        placeholder="Paste your text here...",
-    )
-
-    char_count = len(input_text)
-    is_over_limit = char_count > MAX_CHARS
-    is_empty = not input_text.strip()
-    is_too_short = 0 < char_count < MIN_CHARS
-
-    color = "red" if (is_over_limit or is_too_short) else "gray"
-    st.markdown(f":{color}[{char_count:,} / {MAX_CHARS:,} characters]")
-
-    if is_over_limit:
-        st.error(f"Input is too long. Please keep it under {MAX_CHARS:,} characters.")
-    elif is_too_short:
-        st.warning(f"Input is too short. Please paste at least {MIN_CHARS} characters.")
-
-    if st.button(
-        "Humanize",
-        type="primary",
-        disabled=is_over_limit or is_empty or is_too_short,
-    ):
-        with st.spinner("Rewriting..."):
-            try:
-                output = humanize_text(
-                    text=input_text,
-                    model=model,
-                    rewrite_strength=rewrite_strength,
-                    preserve_markdown=preserve_markdown,
-                    show_analysis=show_analysis,
-                )
-                st.session_state["humanized_output"] = output
-            except Exception as exc:
-                st.error(f"Failed to rewrite text: {exc}")
-
-    if "humanized_output" in st.session_state:
-        st.subheader("Humanized output")
-        st.text_area(
-            "Humanized output",
-            value=st.session_state["humanized_output"],
-            height=400,
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        input_text = st.text_area(
+            "Paste text to humanize",
+            height=300,
+            placeholder="Paste your text here...",
         )
+
+        char_count = len(input_text)
+        is_over_limit = char_count > MAX_CHARS
+        is_empty = not input_text.strip()
+        is_too_short = 0 < char_count < MIN_CHARS
+
+        color = "red" if (is_over_limit or is_too_short) else "gray"
+        st.markdown(f":{color}[{char_count:,} / {MAX_CHARS:,} characters]")
+
+        if is_over_limit:
+            st.error(f"Input is too long. Please keep it under {MAX_CHARS:,} characters.")
+        elif is_too_short:
+            st.warning(f"Input is too short. Please paste at least {MIN_CHARS} characters.")
+
+        if st.button(
+            "Humanize",
+            type="primary",
+            disabled=is_over_limit or is_empty or is_too_short,
+        ):
+            with st.spinner("Rewriting..."):
+                try:
+                    output = humanize_text(
+                        text=input_text,
+                        model=model,
+                        rewrite_strength=rewrite_strength,
+                        preserve_markdown=preserve_markdown,
+                        show_analysis=show_analysis,
+                    )
+                    st.session_state["humanized_output"] = output
+                except Exception as exc:
+                    st.error(f"Failed to rewrite text: {exc}")
+
+        if "humanized_output" in st.session_state:
+            st.subheader("Humanized output")
+            st.text_area(
+                "Humanized output",
+                value=st.session_state["humanized_output"],
+                height=400,
+            )
 
 
 if __name__ == "__main__":
