@@ -1,45 +1,12 @@
 import streamlit as st
 from openai import OpenAI
 
+from prompts import SYSTEM_PROMPT, STRENGTH_INSTRUCTIONS
+
 APP_TITLE = "Humanizer"
-MAX_CHARS = 12000
+MAX_CHARS = 8000
+MIN_CHARS = 10
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
-
-SYSTEM_PROMPT = '''
-You are a careful rewriting assistant.
-
-Rewrite the user's text to sound natural, human-written, and less AI-generated.
-
-Preserve:
-- The original meaning
-- Technical accuracy
-- Markdown structure
-- Citations and references
-- Code blocks
-- Equations
-- Names, dates, numbers, and domain-specific terms
-
-Improve:
-- Overly polished AI phrasing
-- Inflated or promotional language
-- Generic transitions
-- Repetitive sentence rhythm
-- Excessive em dashes
-- Vague claims
-- Awkward passive voice
-- Filler phrases
-- Unnatural "rule of three" phrasing
-
-Do not:
-- Add new facts
-- Remove important details
-- Invent citations
-- Change code
-- Change quoted text unless necessary
-- Explain your changes
-
-Return only the rewritten text.
-'''.strip()
 
 
 def get_secret(name: str) -> str:
@@ -77,27 +44,32 @@ def require_password() -> None:
 def build_user_prompt(
     text: str,
     rewrite_strength: str,
-    output_style: str,
     preserve_markdown: bool,
-    make_concise: bool,
+    show_analysis: bool = False,
 ) -> str:
-    instructions = [
+    parts: list[str] = [
         f"Rewrite strength: {rewrite_strength}.",
-        f"Output style: {output_style}.",
+        STRENGTH_INSTRUCTIONS[rewrite_strength],
     ]
 
     if preserve_markdown:
-        instructions.append("Preserve the original Markdown structure as much as possible.")
+        parts.append("Preserve the original Markdown structure as much as possible.")
     else:
-        instructions.append("Markdown preservation is not required.")
+        parts.append("Markdown preservation is not required.")
 
-    if make_concise:
-        instructions.append("Make the output more concise while preserving meaning.")
+    if show_analysis:
+        parts.append(
+            "Output format: First provide your draft rewrite. Then briefly list "
+            "remaining AI tells under 'Anti-AI Audit:' (bullet points). Then provide "
+            "the final revised version. Then a brief summary of changes made."
+        )
+    else:
+        parts.append("Return only the final rewritten text. No drafts, notes, or explanations.")
 
-    instructions.append("Text to rewrite:")
-    instructions.append(text)
+    parts.append("Text to rewrite:")
+    parts.append(text)
 
-    return "\n\n".join(instructions)
+    return "\n\n".join(parts)
 
 
 @st.cache_resource
@@ -110,18 +82,16 @@ def humanize_text(
     text: str,
     model: str,
     rewrite_strength: str,
-    output_style: str,
     preserve_markdown: bool,
-    make_concise: bool,
+    show_analysis: bool = False,
 ) -> str:
     client = get_client()
 
     user_prompt = build_user_prompt(
         text=text,
         rewrite_strength=rewrite_strength,
-        output_style=output_style,
         preserve_markdown=preserve_markdown,
-        make_concise=make_concise,
+        show_analysis=show_analysis,
     )
 
     response = client.chat.completions.create(
@@ -134,7 +104,8 @@ def humanize_text(
         extra_body={"thinking": {"type": "disabled"}},
     )
 
-    return response.choices[0].message.content.strip()
+    content = response.choices[0].message.content
+    return content.strip() if content else ""
 
 
 def main() -> None:
@@ -144,14 +115,17 @@ def main() -> None:
         """
         <style>
         .stTextArea textarea { font-size: 18px !important; }
-        .stCaption { font-size: 16px !important; }
+        .stCaption { font-size: 18px !important; }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
     st.title(APP_TITLE)
-    st.caption("Rewrite pasted text to sound more natural while preserving meaning.")
+    st.caption(
+        "By **Ji Huang**. Rewrite AI text to sound human. "
+        "Based on the [Humanizer](https://github.com/blader/humanizer) writing principles."
+    )
 
     require_password()
 
@@ -177,14 +151,8 @@ def main() -> None:
             index=1,
         )
 
-        output_style = st.selectbox(
-            "Output style",
-            ["Natural", "Concise", "Professional", "Casual"],
-            index=0,
-        )
-
         preserve_markdown = st.checkbox("Preserve Markdown", value=True)
-        make_concise = st.checkbox("Make more concise", value=False)
+        show_analysis = st.checkbox("Show full analysis", value=False)
 
     input_text = st.text_area(
         "Paste text to humanize",
@@ -195,17 +163,20 @@ def main() -> None:
     char_count = len(input_text)
     is_over_limit = char_count > MAX_CHARS
     is_empty = not input_text.strip()
+    is_too_short = 0 < char_count < MIN_CHARS
 
-    color = "red" if is_over_limit else "gray"
+    color = "red" if (is_over_limit or is_too_short) else "gray"
     st.markdown(f":{color}[{char_count:,} / {MAX_CHARS:,} characters]")
 
     if is_over_limit:
         st.error(f"Input is too long. Please keep it under {MAX_CHARS:,} characters.")
+    elif is_too_short:
+        st.warning(f"Input is too short. Please paste at least {MIN_CHARS} characters.")
 
     if st.button(
         "Humanize",
         type="primary",
-        disabled=is_over_limit or is_empty,
+        disabled=is_over_limit or is_empty or is_too_short,
     ):
         with st.spinner("Rewriting..."):
             try:
@@ -213,9 +184,8 @@ def main() -> None:
                     text=input_text,
                     model=model,
                     rewrite_strength=rewrite_strength,
-                    output_style=output_style,
                     preserve_markdown=preserve_markdown,
-                    make_concise=make_concise,
+                    show_analysis=show_analysis,
                 )
                 st.session_state["humanized_output"] = output
             except Exception as exc:
