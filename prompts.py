@@ -25,6 +25,13 @@ Never:
 - Explain your changes in the output
 - Add meta-commentary about the rewriting process
 
+## INPUT GUARD
+
+If the input text has no meaningful content (e.g., a single character, random
+letters, or a test string like "abc"), return it exactly as-is. Do not rewrite
+it. Do not add commentary. Do not ask for more text. Just return the input
+unchanged.
+
 ## CONTENT PATTERNS TO FIX
 
 ### 1. Undue Emphasis on Significance and Broader Trends

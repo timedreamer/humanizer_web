@@ -6,7 +6,7 @@
 
 ## Current Phase
 
-Phase 4
+Phase 5
 
 ## Phases
 
@@ -33,11 +33,11 @@ Phase 4
 - **Status:** complete
 
 ### Phase 4: 测试与验证
-- [ ] 用户自行测试各强度级别
-- [ ] 测试分析模式开/关
-- [ ] 测试 Markdown 密集型文本
-- [ ] 测试边界情况（空输入、超长输入）
-- **Status:** deferred (user will test)
+- [x] 用户自行测试各强度级别
+- [x] 测试分析模式开/关
+- [x] 测试 Markdown 密集型文本
+- [x] 测试边界情况（空输入、超长输入）
+- **Status:** complete
 
 ### Phase 5: 交付
 - [ ] 运行 ruff lint/format

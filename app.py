@@ -5,6 +5,7 @@ from prompts import SYSTEM_PROMPT, STRENGTH_INSTRUCTIONS
 
 APP_TITLE = "Humanizer"
 MAX_CHARS = 8000
+MIN_CHARS = 10
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 
 
@@ -44,16 +45,12 @@ def build_user_prompt(
     text: str,
     rewrite_strength: str,
     preserve_markdown: bool,
-    make_concise: bool,
     show_analysis: bool = False,
 ) -> str:
     parts: list[str] = [
         f"Rewrite strength: {rewrite_strength}.",
         STRENGTH_INSTRUCTIONS[rewrite_strength],
     ]
-
-    if make_concise:
-        parts.append("Additionally, prioritize conciseness. Tighten wordy phrasing and remove redundancy.")
 
     if preserve_markdown:
         parts.append("Preserve the original Markdown structure as much as possible.")
@@ -86,7 +83,6 @@ def humanize_text(
     model: str,
     rewrite_strength: str,
     preserve_markdown: bool,
-    make_concise: bool,
     show_analysis: bool = False,
 ) -> str:
     client = get_client()
@@ -95,7 +91,6 @@ def humanize_text(
         text=text,
         rewrite_strength=rewrite_strength,
         preserve_markdown=preserve_markdown,
-        make_concise=make_concise,
         show_analysis=show_analysis,
     )
 
@@ -109,7 +104,8 @@ def humanize_text(
         extra_body={"thinking": {"type": "disabled"}},
     )
 
-    return response.choices[0].message.content.strip()
+    content = response.choices[0].message.content
+    return content.strip() if content else ""
 
 
 def main() -> None:
@@ -119,14 +115,17 @@ def main() -> None:
         """
         <style>
         .stTextArea textarea { font-size: 18px !important; }
-        .stCaption { font-size: 16px !important; }
+        .stCaption { font-size: 18px !important; }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
     st.title(APP_TITLE)
-    st.caption("Rewrite pasted text to sound more natural while preserving meaning.")
+    st.caption(
+        "By **Ji Huang**. Rewrite AI text to sound human. "
+        "Based on the [Humanizer](https://github.com/blader/humanizer) writing principles."
+    )
 
     require_password()
 
@@ -153,7 +152,6 @@ def main() -> None:
         )
 
         preserve_markdown = st.checkbox("Preserve Markdown", value=True)
-        make_concise = st.checkbox("Make more concise", value=False)
         show_analysis = st.checkbox("Show full analysis", value=False)
 
     input_text = st.text_area(
@@ -165,17 +163,20 @@ def main() -> None:
     char_count = len(input_text)
     is_over_limit = char_count > MAX_CHARS
     is_empty = not input_text.strip()
+    is_too_short = 0 < char_count < MIN_CHARS
 
-    color = "red" if is_over_limit else "gray"
+    color = "red" if (is_over_limit or is_too_short) else "gray"
     st.markdown(f":{color}[{char_count:,} / {MAX_CHARS:,} characters]")
 
     if is_over_limit:
         st.error(f"Input is too long. Please keep it under {MAX_CHARS:,} characters.")
+    elif is_too_short:
+        st.warning(f"Input is too short. Please paste at least {MIN_CHARS} characters.")
 
     if st.button(
         "Humanize",
         type="primary",
-        disabled=is_over_limit or is_empty,
+        disabled=is_over_limit or is_empty or is_too_short,
     ):
         with st.spinner("Rewriting..."):
             try:
@@ -184,7 +185,6 @@ def main() -> None:
                     model=model,
                     rewrite_strength=rewrite_strength,
                     preserve_markdown=preserve_markdown,
-                    make_concise=make_concise,
                     show_analysis=show_analysis,
                 )
                 st.session_state["humanized_output"] = output
