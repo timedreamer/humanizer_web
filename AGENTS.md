@@ -79,13 +79,14 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Assume no `sudo` access.
 - Keep installs user-local and reproducible.
 - Ensure `$HOME/.local/bin` is on `PATH`.
-- Package/tool install priority:
-  1. `mamba`
-  2. standalone user-space binary
-  3. `conda`
-  4. `uv` (Python packages only)
-  5. `pip`
+- Package/tool install priority: `uv` (Python packages), then standalone user-space binary, then `pip`.
 - If installation fails, report the cause and provide concrete next options.
+
+## Local Development
+- Activate the virtual environment: `source .venv/bin/activate`
+- Install dependencies: `uv pip install -r requirements.txt`
+- Run the app locally: `streamlit run app.py`
+- Lint and type-check: `ruff check . && pyright`
 
 ## Quality Tools
 - Use `ruff` for lint/format and `pyright` for static type checks.
