@@ -17,25 +17,35 @@
   - progress.md (created)
 
 ### Phase 2: 创建 prompts.py
-- **Status:** pending
+- **Status:** complete
+- **Started:** 2026-05-01
 - Actions taken:
-  -
+  - 创建 prompts.py，包含完整的 SYSTEM_PROMPT（7个章节、29种AI写作模式，含词汇列表和 before/after 示例）
+  - 创建 STRENGTH_INSTRUCTIONS 字典（Light/Medium/Strong 详细说明）
+  - 创建 STYLE_INSTRUCTIONS 字典（Natural/Concise/Professional/Casual 详细说明）
 - Files created/modified:
-  -
+  - prompts.py (created)
 
 ### Phase 3: 更新 app.py
-- **Status:** pending
+- **Status:** complete
+- **Started:** 2026-05-01
 - Actions taken:
-  -
+  - 移除旧的 ~20 行 SYSTEM_PROMPT，改为从 prompts.py 导入
+  - 更新 build_user_prompt() — 使用 STRENGTH_INSTRUCTIONS 和 STYLE_INSTRUCTIONS 的详细描述
+  - 添加 show_analysis 参数支持分析模式输出格式
+  - 在侧边栏添加"Show full analysis"复选框（默认关闭）
+  - 更新 humanize_text() 签名，传递 show_analysis 参数
 - Files created/modified:
-  -
+  - app.py (modified)
 
 ### Phase 4: 测试与验证
-- **Status:** pending
+- **Status:** in_progress
+- **Notes:** 用户测试中。发现两处 prompt 问题并修复。
 - Actions taken:
-  -
+  - Pattern 14 从 "Em Dash Overuse" 扩展为 "Dashes (Strictly Prohibited)" — 完全禁止所有破折号
+  - "How to Add Voice" 中的句子节奏建议改为具体长度规则（大多数 <20 词，偶尔 ≤30 词，禁止复合复杂句）
 - Files created/modified:
-  -
+  - prompts.py (modified)
 
 ### Phase 5: 交付
 - **Status:** pending

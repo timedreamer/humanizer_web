@@ -1,45 +1,11 @@
 import streamlit as st
 from openai import OpenAI
 
+from prompts import SYSTEM_PROMPT, STRENGTH_INSTRUCTIONS, STYLE_INSTRUCTIONS
+
 APP_TITLE = "Humanizer"
 MAX_CHARS = 8000
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
-
-SYSTEM_PROMPT = '''
-You are a careful rewriting assistant.
-
-Rewrite the user's text to sound natural, human-written, and less AI-generated.
-
-Preserve:
-- The original meaning
-- Technical accuracy
-- Markdown structure
-- Citations and references
-- Code blocks
-- Equations
-- Names, dates, numbers, and domain-specific terms
-
-Improve:
-- Overly polished AI phrasing
-- Inflated or promotional language
-- Generic transitions
-- Repetitive sentence rhythm
-- Excessive em dashes
-- Vague claims
-- Awkward passive voice
-- Filler phrases
-- Unnatural "rule of three" phrasing
-
-Do not:
-- Add new facts
-- Remove important details
-- Invent citations
-- Change code
-- Change quoted text unless necessary
-- Explain your changes
-
-Return only the rewritten text.
-'''.strip()
 
 
 def get_secret(name: str) -> str:
@@ -80,24 +46,36 @@ def build_user_prompt(
     output_style: str,
     preserve_markdown: bool,
     make_concise: bool,
+    show_analysis: bool = False,
 ) -> str:
-    instructions = [
+    parts: list[str] = [
         f"Rewrite strength: {rewrite_strength}.",
+        STRENGTH_INSTRUCTIONS[rewrite_strength],
         f"Output style: {output_style}.",
+        STYLE_INSTRUCTIONS[output_style],
     ]
 
-    if preserve_markdown:
-        instructions.append("Preserve the original Markdown structure as much as possible.")
-    else:
-        instructions.append("Markdown preservation is not required.")
-
     if make_concise:
-        instructions.append("Make the output more concise while preserving meaning.")
+        parts.append("Additionally, prioritize conciseness. Tighten wordy phrasing and remove redundancy.")
 
-    instructions.append("Text to rewrite:")
-    instructions.append(text)
+    if preserve_markdown:
+        parts.append("Preserve the original Markdown structure as much as possible.")
+    else:
+        parts.append("Markdown preservation is not required.")
 
-    return "\n\n".join(instructions)
+    if show_analysis:
+        parts.append(
+            "Output format: First provide your draft rewrite. Then briefly list "
+            "remaining AI tells under 'Anti-AI Audit:' (bullet points). Then provide "
+            "the final revised version. Then a brief summary of changes made."
+        )
+    else:
+        parts.append("Return only the final rewritten text. No drafts, notes, or explanations.")
+
+    parts.append("Text to rewrite:")
+    parts.append(text)
+
+    return "\n\n".join(parts)
 
 
 @st.cache_resource
@@ -113,6 +91,7 @@ def humanize_text(
     output_style: str,
     preserve_markdown: bool,
     make_concise: bool,
+    show_analysis: bool = False,
 ) -> str:
     client = get_client()
 
@@ -122,6 +101,7 @@ def humanize_text(
         output_style=output_style,
         preserve_markdown=preserve_markdown,
         make_concise=make_concise,
+        show_analysis=show_analysis,
     )
 
     response = client.chat.completions.create(
@@ -185,6 +165,7 @@ def main() -> None:
 
         preserve_markdown = st.checkbox("Preserve Markdown", value=True)
         make_concise = st.checkbox("Make more concise", value=False)
+        show_analysis = st.checkbox("Show full analysis", value=False)
 
     input_text = st.text_area(
         "Paste text to humanize",
@@ -216,6 +197,7 @@ def main() -> None:
                     output_style=output_style,
                     preserve_markdown=preserve_markdown,
                     make_concise=make_concise,
+                    show_analysis=show_analysis,
                 )
                 st.session_state["humanized_output"] = output
             except Exception as exc:

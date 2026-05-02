@@ -6,7 +6,7 @@
 
 ## Current Phase
 
-Phase 1
+Phase 4
 
 ## Phases
 
@@ -18,27 +18,26 @@ Phase 1
 - **Status:** complete
 
 ### Phase 2: 创建 prompts.py
-- [ ] 创建 `prompts.py`，包含：
+- [x] 创建 `prompts.py`，包含：
   - 完整的 SYSTEM_PROMPT（~500行，7个章节，29种模式）
   - STRENGTH_INSTRUCTIONS 字典
   - STYLE_INSTRUCTIONS 字典
-- **Status:** pending
+- **Status:** complete
 
 ### Phase 3: 更新 app.py
-- [ ] 移除旧的 SYSTEM_PROMPT，从 prompts.py 导入
-- [ ] 更新 `build_user_prompt()` — 更丰富的格式，支持分析模式
-- [ ] 在侧边栏添加"显示完整分析"复选框
-- [ ] 更新 `humanize_text()` 签名
-- [ ] 更新输出显示区域
-- **Status:** pending
+- [x] 移除旧的 SYSTEM_PROMPT，从 prompts.py 导入
+- [x] 更新 `build_user_prompt()` — 更丰富的格式，支持分析模式
+- [x] 在侧边栏添加"显示完整分析"复选框
+- [x] 更新 `humanize_text()` 签名
+- [x] 更新输出显示区域
+- **Status:** complete
 
 ### Phase 4: 测试与验证
-- [ ] 运行 app 验证登录和基本功能
-- [ ] 在各强度级别测试 AI 文本人性化
+- [ ] 用户自行测试各强度级别
 - [ ] 测试分析模式开/关
 - [ ] 测试 Markdown 密集型文本
 - [ ] 测试边界情况（空输入、超长输入）
-- **Status:** pending
+- **Status:** deferred (user will test)
 
 ### Phase 5: 交付
 - [ ] 运行 ruff lint/format
