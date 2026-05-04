@@ -123,7 +123,8 @@ def main() -> None:
     st.title(APP_TITLE)
     st.caption(
         "By **Ji Huang**. Rewrite AI text to sound human. "
-        "Based on the [Humanizer](https://github.com/blader/humanizer) writing principles."
+        "Based on the [Humanizer](https://github.com/blader/humanizer) writing principles. "
+        "[GitHub](https://github.com/timedreamer/humanizer_web)"
     )
 
     require_password()

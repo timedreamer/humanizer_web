@@ -1,20 +1,25 @@
-# Humanizer
+# Humanizer Web App
 
 Rewrite AI text to sound human. Based on the [Humanizer](https://github.com/blader/humanizer) writing principles.
 
 Built by **Ji Huang**.
 
+## Features
+
+- **Model choice** — `deepseek-v4-flash` (fast, affordable) or `deepseek-v4-pro` (highest quality). Thinking mode is disabled — rewriting works better with direct output.
+- **Rewrite strength** — Light (fix only obvious AI tells), Medium (balanced corrections), or Strong (full human voice).
+- **Preserve Markdown** — Keep headings, lists, code blocks, and formatting intact through the rewrite.
+- **Full analysis mode** — For power users: see the draft, an anti-AI audit of remaining tells, and the final version, so you understand what changed and why.
+
+## Screenshot
+
+![Humanizer app screenshot](screenshot.png)
+
 ## How it works
 
-The app sends your text to the DeepSeek API with a detailed system prompt covering 29 AI writing patterns — from inflated vocabulary and emoji overuse to formulaic structures and soulless tone. The model rewrites the text, then returns a natural, human-sounding version.
+The app sends your text to the [DeepSeek API](https://api-docs.deepseek.com/) with a detailed system prompt covering 29 AI writing patterns — from inflated vocabulary and emoji overuse to formulaic structures and soulless tone. The model rewrites the text and returns a natural, human-sounding version.
 
-## API configuration
-
-The app calls the [DeepSeek API](https://api-docs.deepseek.com/) with the model selected in the sidebar (`deepseek-v4-flash` or `deepseek-v4-pro`).
-
-**Thinking mode is disabled** (`thinking.type = "disabled"`). DeepSeek's thinking mode runs an internal chain-of-thought before producing the final output, which consumes extra reasoning tokens. Humanization is a straightforward rewrite task — it benefits from clean, direct output, not extended reasoning. Disabling it avoids paying for reasoning tokens that add no value to the result.
-
-**Prompt caching is built into the request structure.** The system prompt (~4K tokens, covering 29 AI writing patterns) is a static constant placed at index 0 of every request. The user message (settings + input text) follows after. DeepSeek automatically caches repeated prefixes, so the system prompt hits cache on every call. Only the dynamic user text at the end misses the cache, keeping costs low across repeated uses.
+Thinking mode is disabled (`thinking.type = "disabled"`). DeepSeek's reasoning step consumes extra tokens but adds no value for a rewrite task. Prompt caching is automatic — the static system prompt hits cache on every call, so only the user's input text costs tokens.
 
 ## Local development
 
