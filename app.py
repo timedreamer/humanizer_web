@@ -1,3 +1,5 @@
+import time
+
 import streamlit as st
 from openai import OpenAI
 
@@ -7,6 +9,8 @@ APP_TITLE = "Humanizer"
 MAX_CHARS = 8000
 MIN_CHARS = 10
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+MAX_REQUESTS_PER_HOUR = 30
+RATE_WINDOW_SECONDS = 3600
 
 
 def get_secret(name: str) -> str:
@@ -15,6 +19,26 @@ def get_secret(name: str) -> str:
         st.error(f"Missing required secret: {name}")
         st.stop()
     return value
+
+
+def _count_requests() -> int:
+    now = time.time()
+    window_start = now - RATE_WINDOW_SECONDS
+    return sum(1 for ts in st.session_state.get("request_timestamps", []) if ts > window_start)
+
+
+def _check_rate_limit() -> bool:
+    return _count_requests() < MAX_REQUESTS_PER_HOUR
+
+
+def _record_request():
+    if "request_timestamps" not in st.session_state:
+        st.session_state.request_timestamps = []
+    st.session_state.request_timestamps.append(time.time())
+
+
+def remaining_quota() -> int:
+    return max(0, MAX_REQUESTS_PER_HOUR - _count_requests())
 
 
 def check_password():
@@ -37,7 +61,7 @@ def require_password() -> None:
         on_change=check_password,
         key="password_input",
     )
-    st.info("Enter the password to use this app.")
+    st.info(f"Password: **{get_secret('APP_PASSWORD')}**")
     st.stop()
 
 
@@ -85,6 +109,13 @@ def humanize_text(
     preserve_markdown: bool,
     show_analysis: bool = False,
 ) -> str:
+    if not _check_rate_limit():
+        st.error(
+            f"Rate limit reached ({MAX_REQUESTS_PER_HOUR} requests per hour). "
+            "Please wait for the window to reset."
+        )
+        st.stop()
+
     client = get_client()
 
     user_prompt = build_user_prompt(
@@ -105,6 +136,7 @@ def humanize_text(
     )
 
     content = response.choices[0].message.content
+    _record_request()
     return content.strip() if content else ""
 
 
@@ -134,7 +166,12 @@ def main() -> None:
 
         if st.button("Logout"):
             st.session_state["authenticated"] = False
+            st.session_state.pop("request_timestamps", None)
             st.rerun()
+
+        st.caption(
+            f"Remaining: **{remaining_quota()}/{MAX_REQUESTS_PER_HOUR}** requests this hour"
+        )
 
         model = st.selectbox(
             "Model",
