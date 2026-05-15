@@ -10,6 +10,8 @@ Built by **Ji Huang**.
 - **Rewrite strength** — Light (fix only obvious AI tells), Medium (balanced corrections), or Strong (full human voice).
 - **Preserve Markdown** — Keep headings, lists, code blocks, and formatting intact through the rewrite.
 - **Full analysis mode** — For power users: see the draft, an anti-AI audit of remaining tells, and the final version, so you understand what changed and why.
+- **Soft password gate** — A password prompt keeps bots away. The password is displayed on the login screen so anyone can get in without asking.
+- **Rate limiting** — 30 requests per hour per session to prevent runaway API usage.
 
 ## Screenshot
 
@@ -34,9 +36,11 @@ streamlit run app.py
 Create `.streamlit/secrets.toml`:
 
 ```toml
-APP_PASSWORD = "your-password"
+APP_PASSWORD = "keepbotaway"
 DEEPSEEK_API_KEY = "sk-your-api-key"
 ```
+
+The password is shown as a hint on the login page — it's a soft gate to keep bots out, not a secret. Pick something short and easy to type.
 
 ## Deploy to Streamlit Community Cloud
 
@@ -46,7 +50,7 @@ DEEPSEEK_API_KEY = "sk-your-api-key"
 4. In the app dashboard, go to **Settings → Secrets** and add:
 
 ```toml
-APP_PASSWORD = "your-password"
+APP_PASSWORD = "keepbotaway"
 DEEPSEEK_API_KEY = "sk-your-api-key"
 ```
 
